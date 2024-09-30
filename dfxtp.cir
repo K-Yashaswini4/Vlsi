@@ -1,0 +1,40 @@
+*vlsi course
+.lib /home/virti/Documents/new_pdk_sky/open_pdks/sky130/sky130A/libs.tech/ngspice/sky130.lib.spice tt
+
+* Voltage sources:
+Vdd vdd gnd DC 1.8
+Vclk clk gnd pulse(0 1.8 0p 200p 100p 1n 2n)
+Vclk_bar clk_bar gnd pulse(1.8 0 0p 200p 100p 1n 2n)
+VD D gnd pulse(0 1.8 0p 200p 100p 1n 2n)  * Input D as a pulse signal
+
+XTG_gate1 D clk_bar clk k TG_gate
+Xnot1  k vdd gnd Q0_bar  not1
+Xnot2  Q0_bar vdd gnd Q0 not1
+XTG_gate2 k clk clk_bar Q0 TG_gate
+
+XTG_gate3 Q0 clk clk_bar k1 TG_gate
+Xnot3  k1 vdd gnd Q_bar  not1
+Xnot4  Q_bar vdd gnd Q not1
+XTG_gate4 k1 clk_bar clk Q TG_gate
+
+* Inverter subcircuit:
+.subckt not1 a vdd vss z
+xm01 z a vdd vdd sky130_fd_pr__pfet_01v8 l=0.15 w=1.1 as=w*l*2 ps=2*(w+2*l) pd=2*(w+2*l)
+xm02 z a vss vss sky130_fd_pr__nfet_01v8 l=0.15 w=0.4 as=w*l*2 ps=2*(w+2*l) pd=2*(w+2*l)
+c3 a vss 0.384f
+c2 z vss 0.576f
+.ends
+
+* Transmission gate subcircuit:
+.subckt TG_gate in clk clk_bar out
+xm01 in clk_bar out out sky130_fd_pr__pfet_01v8 l=0.15 w=1.1 as=w*l*2 ps=2*(w+2*l) pd=2*(w+2*l)
+xm02 out clk in in sky130_fd_pr__nfet_01v8 l=0.15 w=0.4 as=w*l*2 ps=2*(w+2*l) pd=2*(w+2*l)
+.ends
+
+* Simulation command:
+.tran 1ps 10ns 0 10p
+.dc VD 0 1.8 0.01
+.control
+run
+plot clk D Q 
+.endc

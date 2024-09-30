@@ -1,0 +1,48 @@
+*vlsi course
+.lib /home/virti/Documents/new_pdk_sky/open_pdks/sky130/sky130A/libs.tech/ngspice/sky130.lib.spice tt
+
+* Voltage sources:
+Vdd vdd gnd DC 1.8
+Vclk clock gnd pulse(0 1.8 0p 200p 100p 1n 2n)
+VD D_in gnd pulse(0 1.8 0p 200p 100p 3n 6n) 
+
+Xdff D_in clock VDD GND Q2 d_ff
+
+
+.subckt d_ff D_in clock VDD GND Q2
+*clock_inverter
+X8 clk_bar clock VDD VDD sky130_fd_pr__pfet_01v8 ad=4.74n pd=0.278m as=8.542n ps=0.622m w=79 l=15
+X9 clk_bar clock GND GND sky130_fd_pr__nfet_01v8 ad=2.52n pd=0.204m as=1.6802n ps=0.1554m w=42 l=15
+*1st tg
+X0 D_in clock Q1 Q1 sky130_fd_pr__pfet_01v8 ad=6.693n pd=0.332m as=16.168001n ps=0.615m w=69 l=39
+X1 Q1 clk_bar D_in D_in sky130_fd_pr__nfet_01v8 ad=4.635n pd=0.286m as=4.95n ps=0.298m w=50 l=39
+*2nd tg
+X2 Q1 clk_bar Q1bar_out Q1bar_out sky130_fd_pr__pfet_01v8 ad=6.693n pd=0.332m as=5.780615n ps=0.297446m w=69 l=39
+X3 Q1bar_out clock Q1 Q1 sky130_fd_pr__nfet_01v8 ad=4.635n pd=0.286m as=4.059783n ps=0.272826m w=50 l=39
+*1st inverter of first latch
+X4 Q1out Q1 VDD VDD sky130_fd_pr__pfet_01v8 ad=11.160352n pd=0.476135m as=8.542n ps=0.622m w=79 l=15
+X5 Q1out Q1 GND GND sky130_fd_pr__nfet_01v8 ad=3.410218n pd=0.229174m as=1.6802n ps=0.1554m w=42 l=15
+*2nd inverter of first latch
+X6 Q1bar_out Q1out VDD VDD sky130_fd_pr__pfet_01v8 ad=6.618385n pd=0.340554m as=8.542n ps=0.622m w=79 l=15
+X7 Q1bar_out Q1out GND GND sky130_fd_pr__nfet_01v8 ad=3.410218n pd=0.229174m as=1.6802n ps=0.1554m w=42 l=15
+*2nd inverter of second latch
+X10 Q2out Q2 VDD VDD sky130_fd_pr__pfet_01v8 ad=6.618385n pd=0.340554m as=8.542n ps=0.622m w=79 l=15
+X16 Q2out Q2 GND GND sky130_fd_pr__nfet_01v8 ad=3.410218n pd=0.229174m as=1.6802n ps=0.1554m w=42 l=15
+*3rd tg
+X11 Q1out_bar clock Q1out Q1out sky130_fd_pr__nfet_01v8 ad=4.059783n pd=0.272826m as=4.635n ps=0.286m w=50 l=39
+X17 Q1out clk_bar Q1out_bar Q1out_bar sky130_fd_pr__pfet_01v8 ad=9.747648n pd=0.415865m as=6.693n ps=0.332m w=69 l=39
+*4th tg
+X13 Q2out clk_bar Q1out_bar Q1out_bar sky130_fd_pr__nfet_01v8 ad=4.635n pd=0.286m as=4.059783n ps=0.272826m w=50 l=39
+X12 Q1out_bar clock Q2out Q2out sky130_fd_pr__pfet_01v8 ad=6.693n pd=0.332m as=5.780615n ps=0.297446m w=69 l=39
+*1st inverter of second latch
+X14 Q2 Q1out_bar VDD VDD sky130_fd_pr__pfet_01v8 ad=8.542n pd=0.622m as=4.74n ps=0.278m w=79 l=15
+X15 Q2 Q1out_bar GND GND sky130_fd_pr__nfet_01v8 ad=1.6802n pd=0.1554m as=2.52n ps=0.204m w=42 l=15
+.ends
+
+* Simulation command:
+.tran 1ps 50ns 0 10p
+.dc VD 0 1.8 0.01
+.control
+run
+plot clock D_in Q2 
+.endc

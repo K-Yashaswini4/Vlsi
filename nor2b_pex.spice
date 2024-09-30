@@ -1,0 +1,59 @@
+* SkyWater PDK
+* Corrected 2-input NOR gate
+
+.lib /usr/local/share/pdk/sky130A/libs.tech/ngspice/sky130.lib.spice tt
+
+* Voltage sources:
+Vdd vdd gnd DC 1.8
+V1 in1 gnd pulse(0 1.8 0p 1000p 1000p 25n 50n)
+V2 in2 gnd pulse(0 0 1n 200p 100p 1n 2n)
+
+Cload out gnd 100f  ; Load capacitance of 10fF
+
+Xnor1 in1 in2 vdd gnd out nor
+
+* Corrected NOR gate structure with PMOS in series and NMOS in parallel
+.subckt nor a b VDD GND z
+* PMOS transistors in series
+X0 abar a VDD VDD sky130_fd_pr__pfet_01v8 ad=0.474u pd=2.78u as=0.691674u ps=3.675365u w=0.79 l=0.15
+
+X1 abar a GND GND sky130_fd_pr__nfet_01v8 ad=0.252u pd=2.04u as=0.536867u ps=3.953333u w=0.42 l=0.15
+
+X2 z b pin pin sky130_fd_pr__pfet_01v8 ad=2.0073u pd=5.7u as=1.005493u ps=2.859223u w=1.55 l=0.31
+
+X3 pin abar VDD VDD sky130_fd_pr__pfet_01v8 ad=0.999007u pd=2.840777u as=1.348326u ps=7.164635u w=1.54 l=0.31
+
+X4 z b GND GND sky130_fd_pr__nfet_01v8 ad=0.536867u pd=3.953333u as=0.2732u ps=1.73u w=0.42 l=0.31
+
+X5 z abar GND GND sky130_fd_pr__nfet_01v8 ad=0.2732u pd=1.73u as=0.536867u ps=3.953333u w=0.42 l=0.31
+
+* Capacitances for balancing rise/fall times
+*c3 a vss 0.384f
+*c2 z vss 0.576f
+C0 b VDD 0.079295f
+C1 b abar 0.015698f
+C2 z b 0.056041f
+C3 pin VDD 0.014594f
+C4 pin abar 8.01e-19
+C5 VDD abar 0.400682f
+C6 a VDD 0.089644f
+C7 a abar 0.037592f
+C8 z pin 0.030295f
+C9 z VDD 0.071886f
+C10 z abar 0.021716f
+C11 z GND 0.2651f
+C12 pin GND 0.011026f
+C13 b GND 0.203622f
+C14 abar GND 1.268213f
+C15 a GND 0.227441f
+C16 VDD GND 3.926401f
+.ends
+
+* Simulation command:
+.tran 1ps 100ns 0 10p
+.dc V1 0 1.8 0.01
+
+.control
+run
+plot in1 in2 out
+.endc
